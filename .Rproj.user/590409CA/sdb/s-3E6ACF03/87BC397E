@@ -1,0 +1,17 @@
+{
+    "contents" : "Amtrak.data <- read.csv(\"./Amtrak data.csv\")\nridership.ts <- ts(Amtrak.data$Ridership, start = c(1991,1), end = c(2004, 3), freq = 12)\n\nlibrary(\"forecast\")\n\nnValid <- 36\nnTrain <- length(ridership.ts) - nValid\ntrain.ts <- window(ridership.ts, start = c(1991, 1), end = c(1991, nTrain))\nvalid.ts <- window(ridership.ts, start = c(1991, nTrain + 1), end = c(1991, nTrain + nValid))\n\nhw <- ets(train.ts, model = \"MMA\", restrict = FALSE)\nplot(hw)\nhw\n\nESOpt <- ets(train.ts)\nplot(ESOpt)\nESOpt\n\npar(mfrow = c(2, 1))\n\nhw.pred <- forecast(hw, h = nValid, level = 0)\nplot(hw.pred, ylim = c(1300, 2600),  ylab = \"Ridership\", xlab = \"Time\", bty = \"l\", xaxt = \"n\",\n     xlim = c(1991,2006.25), main = \"\", flty = 2)\naxis(1, at = seq(1991, 2006, 1), labels = format(seq(1991, 2006, 1)))\nlines(hw.pred$fitted, lwd = 2, col = \"blue\")\nlines(valid.ts)\n\nESOpt.pred <- forecast(ESOpt, h = nValid, level = 0)\nplot(ESOpt.pred, ylim = c(1300, 2600),  ylab = \"Ridership\", xlab = \"Time\", bty = \"l\", xaxt = \"n\",\n     xlim = c(1991,2006.25), main = \"\", flty = 2)\naxis(1, at = seq(1991, 2006, 1), labels = format(seq(1991, 2006, 1)))\nlines(ESOpt.pred$fitted, lwd = 2, col = \"blue\")\nlines(valid.ts)\n\naccuracy(hw.pred$mean, valid.ts)\naccuracy(ESOpt.pred$mean, valid.ts)\n\n",
+    "created" : 1443287273088.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3235251703",
+    "id" : "87BC397E",
+    "lastKnownWriteTime" : 1443290012,
+    "path" : "C:/R/projects/forecast-learn/5ETSModels.R",
+    "project_path" : "5ETSModels.R",
+    "properties" : {
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

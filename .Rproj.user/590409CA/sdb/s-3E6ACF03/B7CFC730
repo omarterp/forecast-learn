@@ -1,0 +1,17 @@
+{
+    "contents" : "Amtrak.data <- read.csv(\"./Amtrak data.csv\")\nridership.ts <- ts(Amtrak.data$Ridership, start = c(1991,1), end = c(2004, 3), freq = 12)\n\nlibrary(\"forecast\")\n\npar(mfrow = c(3, 1))\n\nplot(ridership.ts, xlab = \"Time\", ylab = \"Ridership\", ylim = c(1300, 2300), bty = \"l\")\n\nseasonplot(ridership.ts, ylab=\"Ridership\", \n           xlab=\"Year\", main=\"Seasonal Plot\", year.labels=TRUE)\n\nmonthplot(ridership.ts, ylab=\"Ridership\", \n           xlab=\"Year\", main=\"Seasonal Deviation Plot\")\n\npar(mfrow = c(2, 1))\n\nlag.plot(ridership.ts, lags=16)\n\ntsdisplay(ridership.ts)",
+    "created" : 1443276002217.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2351603656",
+    "id" : "B7CFC730",
+    "lastKnownWriteTime" : 1443276948,
+    "path" : "C:/R/projects/forecast-learn/1UsefulPlots.R",
+    "project_path" : "1UsefulPlots.R",
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

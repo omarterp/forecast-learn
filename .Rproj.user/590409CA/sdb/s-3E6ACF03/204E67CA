@@ -1,0 +1,17 @@
+{
+    "contents" : "Amtrak.data <- read.csv(\"/Users/jasonmerrick2/Documents/Teaching/Exec Ed/Decision Analytics/Forecasting/Amtrak data.csv\")\nridership.ts <- ts(Amtrak.data$Ridership, start = c(1991,1), end = c(2004, 3), freq = 12)\n\nlibrary(\"forecast\")\n\nplot(ridership.ts)\n\nnValid <- 36\nnTrain <- length(ridership.ts) - nValid\ntrain.ts <- window(ridership.ts, start = c(1991, 1), end = c(1991, nTrain))\nvalid.ts <- window(ridership.ts, start = c(1991, nTrain + 1), end = c(1991, nTrain + nValid))\n\ntsdisplay(train.ts)\n\nfitARIMA <- arima(train.ts, order = c(1,0,0))\nsummary(fitARIMA)\nBox.test(residuals(fitARIMA), lag=24, fitdf=1, type=\"Ljung-Box\")\n\nresidualARIMA <- arima.errors(fitARIMA)\ntsdisplay(residualARIMA)\n\npar(mfrow = c(2, 1))\nforecastARIMA <- forecast(fitARIMA, level=c(80,95), h=12)\nplot(forecastARIMA)\n\ndiff.train.ts <- diff(train.ts, lag = 1)\n\ntsdisplay(diff.train.ts)\n\nfitSARIMA <- auto.arima(train.ts)#arima(train.ts, order = c(0,1,0), seasonal=c(1,0,0))\nsummary(fitSARIMA)\nBox.test(residuals(fitSARIMA), lag=24, fitdf=1, type=\"Ljung-Box\")\n\nresidualSARIMA <- arima.errors(fitSARIMA)\ntsdisplay(residualSARIMA)\n\nforecastSARIMA <- forecast(fitSARIMA, level=c(80,95), h=nValid)\nplot(forecastSARIMA)\n\npar(mfrow = c(2, 1))\nhist(forecastSARIMA$residuals, ylab = \"Frequency\", xlab = \"Fit Error\", bty = \"l\", main = \"\")\nhist(valid.ts - forecastSARIMA$mean, ylab = \"Frequency\", xlab = \"Forecast Error\", bty = \"l\", main = \"\")\n\naccuracy(forecastSARIMA$mean, valid.ts)",
+    "created" : 1443290025928.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2595155425",
+    "id" : "204E67CA",
+    "lastKnownWriteTime" : 1443292670,
+    "path" : "C:/R/projects/forecast-learn/7ARIMA.R",
+    "project_path" : "7ARIMA.R",
+    "properties" : {
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

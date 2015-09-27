@@ -1,0 +1,17 @@
+{
+    "contents" : "Amtrak.data <- read.csv(\"./Amtrak data.csv\")\nridership.ts <- ts(Amtrak.data$Ridership, start = c(1991,1), end = c(2004, 3), freq = 12)\n\nlibrary(\"forecast\")\nlibrary(\"zoo\")\n\npar(mfrow = c(1, 1))\n\nma.trailing <- rollmean(ridership.ts, k = 12, align = \"right\")\nma.centered <- ma(ridership.ts, order = 12)\nplot(ridership.ts, ylim = c(1300, 2600),  ylab = \"Ridership\", xlab = \"Time\", bty = \"l\", xaxt = \"n\",\n     xlim = c(1991,2004.25), main = \"\")\naxis(1, at = seq(1991, 2004.25, 1), labels = format(seq(1991, 2004.25, 1)))\nlines(ma.centered, lwd = 2)\nlines(ma.trailing, lwd = 2, lty = 2)\nlegend(1994,2600, c(\"Ridership\",\"Centered Moving Average\", \"Trailing Moving Average\"), lty=c(1,1,2),\n       lwd=c(1,2,2), bty = \"n\")\n\nnValid <- 36\nnTrain <- length(ridership.ts) - nValid\ntrain.ts <- window(ridership.ts, start = c(1991, 1), end = c(1991, nTrain))\nvalid.ts <- window(ridership.ts, start = c(1991, nTrain + 1), end = c(1991, nTrain + nValid))\nma.trailing <- rollmean(train.ts, k = 12, align = \"right\")\nlast.ma <- tail(ma.trailing, 1)\nma.trailing.pred <- ts(rep(last.ma, nValid), start = c(1991, nTrain + 1),\n                       end = c(1991, nTrain + nValid), freq = 12)\nplot(train.ts, ylim = c(1300, 2600),  ylab = \"Ridership\", xlab = \"Time\", bty = \"l\", xaxt = \"n\",\n     xlim = c(1991,2006.25), main = \"\")\naxis(1, at = seq(1991, 2006, 1), labels = format(seq(1991, 2006, 1)))\nlines(ma.trailing, lwd = 2, col = \"blue\")\nlines(ma.trailing.pred, lwd = 2, col = \"blue\", lty = 2)\nlines(valid.ts)\n\n",
+    "created" : 1443278861550.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2924413030",
+    "id" : "2C1BC6",
+    "lastKnownWriteTime" : 1443279176,
+    "path" : "C:/R/projects/forecast-learn/3MAModels.R",
+    "project_path" : "3MAModels.R",
+    "properties" : {
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

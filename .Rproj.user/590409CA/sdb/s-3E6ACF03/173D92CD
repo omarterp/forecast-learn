@@ -1,0 +1,17 @@
+{
+    "contents" : "Amtrak.data <- read.csv(\"./Amtrak data.csv\")\nridership.ts <- ts(Amtrak.data$Ridership, start = c(1991,1), end = c(2004, 3), freq = 12)\n\nplot(ridership.ts, xlab = \"Time\", ylab = \"Ridership\", ylim = c(1300, 2300), bty = \"l\")\n\nlibrary(\"forecast\")\n\nfit1 <- decompose(ridership.ts, type=\"additive\")\nplot(fit1)\n\nfit2 <- stl(ridership.ts, t.window = 12, s.window=24, robust=TRUE)\nplot(fit2)\n\nforecast2 <- forecast(fit2, h=26)\nplot(forecast2)\n",
+    "created" : 1443279782792.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "749015212",
+    "id" : "173D92CD",
+    "lastKnownWriteTime" : 1443287266,
+    "path" : "C:/R/projects/forecast-learn/4Decomposition.R",
+    "project_path" : "4Decomposition.R",
+    "properties" : {
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

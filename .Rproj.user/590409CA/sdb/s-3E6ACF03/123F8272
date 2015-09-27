@@ -1,0 +1,17 @@
+{
+    "contents" : "Amtrak.data <- read.csv(\"./Amtrak data.csv\")\nridership.ts <- ts(Amtrak.data$Ridership, start = c(1991,1), end = c(2004, 3), freq = 12)\n\nplot(ridership.ts, xlab = \"Time\", ylab = \"Ridership\", ylim = c(1300, 2300), bty = \"l\")\n\nlibrary(\"forecast\")\n\npar(mfrow = c(2, 2))\n\nplot(ridership.ts, ylim = c(1300, 2200),  ylab = \"Ridership\", xlab = \"Time\",\n     bty = \"l\", xaxt = \"n\", xlim = c(1991,2006.25), main = \"\", lty = 1)\naxis(1, at = seq(1991, 2006, 1), labels = format(seq(1991, 2006, 1)))\n\ndiff.once1.ts <- diff(ridership.ts, lag = 1)\n\nplot(diff.once1.ts, ylim = c(-400, 400),  ylab = \"Ridership (Lag 1 Difference)\", xlab = \"Time\",\n     bty = \"l\", xaxt = \"n\", xlim = c(1991,2006.25), main = \"\", lty = 1)\naxis(1, at = seq(1991, 2006, 1), labels = format(seq(1991, 2006, 1)))\n\ndiff.once12.ts <- diff(ridership.ts, lag = 12)\n\nplot(diff.once12.ts, ylim = c(-400, 400),  ylab = \"Ridership (Lag 12 Difference)\", xlab = \"Time\",\n     bty = \"l\", xaxt = \"n\", xlim = c(1991,2006.25), main = \"\", lty = 1)\naxis(1, at = seq(1991, 2006, 1), labels = format(seq(1991, 2006, 1)))\n\ndiff.twice.ts <- diff(diff(ridership.ts, lag = 12), lag = 1)\n\nplot(diff.twice.ts, ylim = c(-400, 400),  ylab = \"Ridership (Twice-Differenced)\", xlab = \"Time\",\n     bty = \"l\", xaxt = \"n\", xlim = c(1991,2006.25), main = \"\", lty = 1)\naxis(1, at = seq(1991, 2006, 1), labels = format(seq(1991, 2006, 1)))\n\npar(mfrow = c(1, 1))\n\nnValid <- 36\nnTrain <- length(diff.twice.ts) - nValid\ntrain.ts <- window(diff.twice.ts, start = c(1992, 2), end = c(1992, nTrain + 1))\nvalid.ts <- window(diff.twice.ts, start = c(1992, nTrain + 2), end = c(1992, nTrain + 1 + nValid))\nses <- auto.arima(train.ts)\nses.pred <- forecast(ses, h = nValid)\nplot(ses.pred, ylim = c(-250, 300),  ylab = \"Ridership (Twice-Differenced)\", xlab = \"Time\",\n     bty = \"l\", xaxt = \"n\", xlim = c(1991,2006.25), main = \"\", flty = 2)\naxis(1, at = seq(1991, 2006, 1), labels = format(seq(1991, 2006, 1)))\nlines(ses.pred$fitted, lwd = 2, col = \"blue\")\nlines(valid.ts)\n\n\n\n\n\n",
+    "created" : 1443276952590.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "510643533",
+    "id" : "123F8272",
+    "lastKnownWriteTime" : 1443278827,
+    "path" : "C:/R/projects/forecast-learn/2DiffModels.R",
+    "project_path" : "2DiffModels.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "type" : "r_source"
+}
