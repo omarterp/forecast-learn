@@ -10,7 +10,7 @@ valid.ts <- window(ridership.ts, start = c(1991, nTrain + 1), end = c(1991, nTra
 
 hw <- ets(train.ts, model = "MMA", restrict = FALSE)
 plot(hw)
-hw
+str(hw)
 
 ESOpt <- ets(train.ts)
 plot(ESOpt)
