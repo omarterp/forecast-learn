@@ -1,24 +1,19 @@
-#install.packages("RCurl")
-#install.packages("jsonlite")
-library(stringr)
-library(RCurl)
-library(jsonlite)
-library(readr)
-library(dplyr)
-library(ggplot2)
-library(zoo)
-library(reshape2)
+handle_package <- function(x) {
+  a <- require(x, character.only = TRUE)
+  if(!a) {
+    install.packages(x)
+    require(x, character.only = TRUE)
+  }
+}
 
+#load dependancies
+pkg <- c("ggplot2","dplyr","R.utils","fdrtool","caret","randomForest","pROC", 
+         "readr", "stringr", "corrgram", "corrplot", "aod", "rvest", "ggfortify",
+         "zoo", "reshape2", "jsonlite", "devtools", "scales")
 
-#install_github('sinhrks/ggfortify')
-library(ggfortify)
+out <- lapply(pkg, handle_package)
 
-a <- require(test, quietly = TRUE, warn.conflicts = FALSE)
-
-install.packages("devtools")
-library(devtools)
-build_github_devtools()
-
+#install_github("sinhrks/ggfortify")
 
 
 #http://www.eia.gov/beta/api/qb.cfm?sdid=PET.MGFUPP12.M
@@ -53,6 +48,7 @@ time_series_df$id <- as.integer(row.names(time_series_df))
 
 time_series_df <- arrange(time_series_df, desc(id))
 
+lapply(dev.list(), dev.off)
 
 # Create Time Series Object
 fuel_consumption_ts <- ts(time_series_df$consumption, start = c(1981,1), end = c(2015, 7), freq = 12)
@@ -82,6 +78,30 @@ p + geom_line()
 
 
 autoplot(fuel_consumption_ts)
+
+
+
+
+
+### Convert month_year to Date type - facilitate graphing with ggplot
+time_series_df$month_year_conv <- as.Date(str_replace(time_series_df$month_year, " ", "01"), "%b%d%Y")
+
+time_series_df
+
+# Time Series Plot
+p <- ggplot(time_series_df, aes(month_year_conv , consumption))
+
+p + geom_line() +
+    scale_x_date(labels = date_format("%b-%y"), breaks = "3 years") +
+    xlab("") +
+    ylab("Fuel Consumption") +
+    geom_smooth()
+
+# Histogram & Density Function / Normal Distribution Comparison
+# Bimodal Distribution - 80 & 90s ; 00s & 10s
+qplot(consumption, data = time_series_df, geom = "histogram")
+
+# Correlation plot matrix
 
 
 library(ggplot2)
