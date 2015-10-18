@@ -89,7 +89,7 @@ time_series_df$month_year_conv <- as.Date(str_replace(time_series_df$month_year,
 time_series_df
 
 # Time Series Plot
-p <- ggplot(time_series_df, aes(month_year_conv , consumption))
+p <- ggplot(time_series_df, aes(x = month_year_conv , y = consumption))
 
 p + geom_line() +
     scale_x_date(labels = date_format("%b-%y"), breaks = "3 years") +
@@ -99,9 +99,14 @@ p + geom_line() +
 
 # Histogram & Density Function / Normal Distribution Comparison
 # Bimodal Distribution - 80 & 90s ; 00s & 10s
-qplot(consumption, data = time_series_df, geom = "histogram")
+p <- ggplot(time_series_df, aes(x = consumption))
+p + geom_histogram(binwidth = 40) + 
+  geom_density(stat = "bin")
+
+lines(density(time_series_df$consumption))
 
 # Correlation plot matrix
+
 
 
 library(ggplot2)

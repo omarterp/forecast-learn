@@ -9,7 +9,7 @@ handle_package <- function(x) {
 
 pkg <- c("ggplot2","dplyr","R.utils","fdrtool","caret","randomForest","pROC", 
          "readr", "stringr", "corrgram", "corrplot", "aod", "rvest", "ggfortify",
-         "zoo", "reshape2", "jsonlite", "devtools", "scales")
+         "zoo", "reshape2", "jsonlite", "devtools", "scales", "forecast")
 
 lapply(pkg, handle_package)
 
@@ -61,4 +61,40 @@ bp + geom_boxplot()
 bp <- ggplot(time_series_df, aes(x = month , y = consumption))
 
 bp + geom_boxplot()
+
+
+# Data Partitioning
+nValid <- 18
+nTrain <- length(fuel_consumption_ts) - nValid
+train.ts <- window(fuel_consumption_ts, start = c(1981, 1), end = c(1981, nTrain))
+valid.ts <- window(fuel_consumption_ts, start = c(1981, nTrain + 1), end = c(1981, nTrain + nValid))
+
+# Models
+hw <- ets(train.ts, model = "MMA", restrict = FALSE)
+plot(hw)
+str(hw)
+
+ESOpt <- ets(train.ts)
+plot(ESOpt)
+ESOpt
+
+
+par(mfrow = c(2, 1))
+
+hw.pred <- forecast(hw, h = nValid, level = 0)
+plot(hw.pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
+     xlim = c(1981,2015.75), main = "", flty = 2)
+axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
+lines(hw.pred$fitted, lwd = 2, col = "blue")
+lines(valid.ts)
+
+ESOpt.pred <- forecast(ESOpt, h = nValid, level = 0)
+plot(ESOpt.pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
+     xlim = c(1981,2015.75), main = "", flty = 2)
+axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
+lines(hw.pred$fitted, lwd = 2, col = "blue")
+lines(valid.ts)
+
+accuracy(hw.pred$mean, valid.ts)
+accuracy(ESOpt.pred$mean, valid.ts)
 
