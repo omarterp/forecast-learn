@@ -70,9 +70,26 @@ train.ts <- window(fuel_consumption_ts, start = c(1981, 1), end = c(1981, nTrain
 valid.ts <- window(fuel_consumption_ts, start = c(1981, nTrain + 1), end = c(1981, nTrain + nValid))
 
 # Models
+ses <- ses(train.ts, h = 12, level = c(80, 95))
+ses_pred <- forecast(ses, h = nValid,  level = c(80,95))
+
+plot(ses_pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
+     xlim = c(1981,2015.75), main = "", flty = 2)
+axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
+lines(hw.pred$fitted, lwd = 2, col = "blue")
+lines(valid.ts)
+
+plot(ses)
+hw
+
+holt(
+  
+)
+
+
 hw <- ets(train.ts, model = "MMA", restrict = FALSE)
 plot(hw)
-str(hw)
+hw
 
 ESOpt <- ets(train.ts)
 plot(ESOpt)
@@ -82,6 +99,7 @@ ESOpt
 par(mfrow = c(2, 1))
 
 hw.pred <- forecast(hw, h = nValid, level = 0)
+
 plot(hw.pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
 axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
@@ -89,12 +107,14 @@ lines(hw.pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
 ESOpt.pred <- forecast(ESOpt, h = nValid, level = 0)
+
 plot(ESOpt.pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
 axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
 lines(hw.pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
+accuracy(ses$mean, valid.ts)
 accuracy(hw.pred$mean, valid.ts)
 accuracy(ESOpt.pred$mean, valid.ts)
 
