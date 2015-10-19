@@ -63,15 +63,22 @@ bp <- ggplot(time_series_df, aes(x = month , y = consumption))
 bp + geom_boxplot()
 
 
+
+
+
 # Data Partitioning
-nValid <- 18
+nValid <- 12
+prediction_multiplier <- 2
+prediction_periods <- nValid * prediction_multiplier
+
 nTrain <- length(fuel_consumption_ts) - nValid
 train.ts <- window(fuel_consumption_ts, start = c(1981, 1), end = c(1981, nTrain))
 valid.ts <- window(fuel_consumption_ts, start = c(1981, nTrain + 1), end = c(1981, nTrain + nValid))
 
+
 # Models
-ses <- ses(train.ts, h = 12, level = c(80, 95))
-ses_pred <- forecast(ses, h = nValid,  level = c(80,95))
+ses <- ses(train.ts, level = c(80, 95))
+ses_pred <- forecast(ses, h = prediction_periods,  level = c(80,95))
 
 plot(ses_pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
@@ -87,7 +94,7 @@ holt(
 )
 
 
-hw <- ets(train.ts, model = "MMA", restrict = FALSE)
+hw <- ets(train.ts, model = "MMA", alpha = 0.9, restrict = FALSE)
 plot(hw)
 hw
 
@@ -98,7 +105,7 @@ ESOpt
 
 par(mfrow = c(2, 1))
 
-hw.pred <- forecast(hw, h = nValid, level = 0)
+hw.pred <- forecast(hw, h = prediction_periods, level = 0)
 
 plot(hw.pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
@@ -106,7 +113,7 @@ axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
 lines(hw.pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
-ESOpt.pred <- forecast(ESOpt, h = nValid, level = 0)
+ESOpt.pred <- forecast(ESOpt, h = prediction_periods, level = 0)
 
 plot(ESOpt.pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
@@ -114,7 +121,32 @@ axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
 lines(hw.pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
-accuracy(ses$mean, valid.ts)
+accuracy(ses_pred$mean, valid.ts)
 accuracy(hw.pred$mean, valid.ts)
 accuracy(ESOpt.pred$mean, valid.ts)
+
+class(ses_pred$residuals)
+
+# plot residuals
+ses_residuals <- fortify(ses_pred$residuals)
+names(ses_residuals) <- c("time","residual")
+
+hw_residuals <- fortify(hw.pred$residuals)
+names(hw_residuals) <- c("time","residual")
+
+ESOpt_residuals <- fortify(ESOpt.pred$residuals)
+names(ESOpt_residuals) <- c("time","residual")
+
+
+
+p <- ggplot(hw_residuals, aes(x = time, y = residual))
+p + geom_line(aes(colour = residual))
+
+p <- ggplot(ses_residuals, aes(x = time, y = residual))
+p + geom_line(aes(colour = residual)) +
+  geom_line(data = hw_residuals, aes(x = time, y = residual), colour = "red") +
+  geom_line(data = ESOpt_residuals, aes(x = time, y = residual), colour = "orange")
+
+
+
 
