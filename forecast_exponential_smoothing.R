@@ -1,3 +1,16 @@
+detach_package <- function(pkg, character.only = FALSE)
+{
+  if(!character.only)
+  {
+    pkg <- deparse(substitute(pkg))
+  }
+  search_item <- paste("package", pkg, sep = ":")
+  while(search_item %in% search())
+  {
+    detach(search_item, unload = TRUE, character.only = TRUE)
+  }
+}
+
 # load dependencies
 handle_package <- function(x) {
   a <- require(x, character.only = TRUE)
@@ -12,6 +25,8 @@ pkg <- c("ggplot2","dplyr","R.utils","fdrtool","caret","randomForest","pROC",
          "zoo", "reshape2", "jsonlite", "devtools", "scales", "forecast")
 
 lapply(pkg, handle_package)
+
+#detach_package("gridExtra", TRUE)
 
 
 # load time series data - problems(time_series)
@@ -44,25 +59,42 @@ fuel_consumption_ts <- ts(time_series_df$consumption, start = c(1981,1), end = c
 p <- ggplot(time_series_df, aes(x = month_year_conv , y = consumption))
 
 p + geom_line() +
-    ggtitle("Fuel Consumption Time Series") +
+    ggtitle("Product Supplied of Finished Gasoline") +
     xlab("Month-Year") + 
-    ylab("Thousands Barrels per Day") +
+    ylab("Thousand Barrels per Day") +
     scale_x_date(labels = date_format("%b-%y"), breaks = "3 years") +
     geom_smooth()
-
-
 
 # Does the variation increase as the level increases - By Year
 bp <- ggplot(time_series_df, aes(x = year , y = consumption))
 
 bp + geom_boxplot()
 
+# Bimodal Histogram
+bm <- ggplot(time_series_df, aes(x = consumption))
+bm + geom_histogram() +
+  ggtitle("Product Supplied of Finished Gasoline") +  
+  ylab("frequency") +
+  xlab("Thousand Barrels per Day")
+
+
+
+
+time_series_df_1 <- time_series_df %>%
+                      filter(year < 2000)
+
 # By Month - Bi Modal
-bp <- ggplot(time_series_df, aes(x = month , y = consumption))
+bp <- ggplot(time_series_df_1, aes(x = month , y = consumption))
 
 bp + geom_boxplot()
 
+time_series_df_2 <- time_series_df %>%
+                      filter(year >= 2000)
 
+# By Month - Bi Modal
+bp <- ggplot(time_series_df_2, aes(x = month , y = consumption))
+
+bp + geom_boxplot()
 
 
 
@@ -77,53 +109,58 @@ valid.ts <- window(fuel_consumption_ts, start = c(1981, nTrain + 1), end = c(198
 
 
 # Models
-ses <- ses(train.ts, level = c(80, 95))
+ses <- ses(train.ts)
 ses_pred <- forecast(ses, h = prediction_periods,  level = c(80,95))
 
 plot(ses_pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
 axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
-lines(hw.pred$fitted, lwd = 2, col = "blue")
+lines(hw_pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
 plot(ses)
-hw
 
-holt(
-  
-)
+holt_m <- holt(train.ts)
+h_pred <- forecast(holt_m, h = prediction_periods, level = c(80,95))
 
+plot(h_pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
+     xlim = c(1981,2015.75), main = "", flty = 2)
+axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
+lines(h_pred$fitted, lwd = 2, col = "blue")
+lines(valid.ts)
 
-hw <- ets(train.ts, model = "MMA", alpha = 0.9, restrict = FALSE)
+hw <- ets(train.ts, model = "MMA", alpha = 0.8, restrict = FALSE)
 plot(hw)
 hw
 
-ESOpt <- ets(train.ts)
-plot(ESOpt)
-ESOpt
-
-
 par(mfrow = c(2, 1))
 
-hw.pred <- forecast(hw, h = prediction_periods, level = 0)
+hw_pred <- forecast(hw, h = prediction_periods, level = c(80,95))
 
-plot(hw.pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
+plot(hw_pred, ylim = c(1800, 4000),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
 axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
-lines(hw.pred$fitted, lwd = 2, col = "blue")
+lines(hw_pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
-ESOpt.pred <- forecast(ESOpt, h = prediction_periods, level = 0)
+es_opt <- ets(train.ts)
+plot(es_opt)
+es_opt
 
-plot(ESOpt.pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
+es_opt_pred <- forecast(es_opt, h = prediction_periods, level = c(80,95))
+
+plot(es_opt_pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
 axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
-lines(hw.pred$fitted, lwd = 2, col = "blue")
+lines(es_opt_pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
+
+# Accuracy
 accuracy(ses_pred$mean, valid.ts)
-accuracy(hw.pred$mean, valid.ts)
-accuracy(ESOpt.pred$mean, valid.ts)
+accuracy(h_pred$mean, valid.ts)
+accuracy(hw_pred$mean, valid.ts)
+accuracy(es_opt_pred$mean, valid.ts)
 
 class(ses_pred$residuals)
 
@@ -131,22 +168,37 @@ class(ses_pred$residuals)
 ses_residuals <- fortify(ses_pred$residuals)
 names(ses_residuals) <- c("time","residual")
 
-hw_residuals <- fortify(hw.pred$residuals)
+h_residuals <- fortify(h_pred$residuals)
 names(hw_residuals) <- c("time","residual")
 
-ESOpt_residuals <- fortify(ESOpt.pred$residuals)
+h_residuals <- fortify(hw_pred$residuals)
+names(h_residuals) <- c("time","residual")
+
+ESOpt_residuals <- fortify(es_opt_pred$residuals)
 names(ESOpt_residuals) <- c("time","residual")
 
 
-
+# Plot Residuals
 p <- ggplot(hw_residuals, aes(x = time, y = residual))
 p + geom_line(aes(colour = residual))
 
+lapply(dev.list(),dev.off)
+
+par(mfrow = c(2,1))
+
 p <- ggplot(ses_residuals, aes(x = time, y = residual))
 p + geom_line(aes(colour = residual)) +
-  geom_line(data = hw_residuals, aes(x = time, y = residual), colour = "red") +
-  geom_line(data = ESOpt_residuals, aes(x = time, y = residual), colour = "orange")
+  geom_point(data = ESOpt_residuals, aes(x = time, y = residual), colour = "#CC0033")
 
+p1 <- ggplot(data = hw_residuals, aes(x = time, y = residual))
+p1 + geom_line(aes(colour = residual))
+
+plot1 <- qplot(x = time, y = residual, aes(colour = residuals), 
+               data = ses_residuals, geom = "line")
+plot1
+
+
+grid.arrange(plot1)
 
 
 
