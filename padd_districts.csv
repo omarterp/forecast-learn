@@ -1,0 +1,51 @@
+district,state_cd,district_description
+5,WA,"PADD 5: West Coast, AK, HI"
+5,OR,"PADD 5: West Coast, AK, HI"
+5,CA,"PADD 5: West Coast, AK, HI"
+5,NV,"PADD 5: West Coast, AK, HI"
+5,AZ,"PADD 5: West Coast, AK, HI"
+5,AK,"PADD 5: West Coast, AK, HI"
+5,HI,"PADD 5: West Coast, AK, HI"
+4,MT,PADD 4: Rocky Mountain
+4,ID,PADD 4: Rocky Mountain
+4,WY,PADD 4: Rocky Mountain
+4,UT,PADD 4: Rocky Mountain
+4,CO,PADD 4: Rocky Mountain
+3,NM,PADD 3: Gulf Coast
+3,TX,PADD 3: Gulf Coast
+3,AR,PADD 3: Gulf Coast
+3,LA,PADD 3: Gulf Coast
+3,MS,PADD 3: Gulf Coast
+3,AL,PADD 3: Gulf Coast
+2,ND,PADD 2: Midwest
+2,SD,PADD 2: Midwest
+2,NE,PADD 2: Midwest
+2,KS,PADD 2: Midwest
+2,OK,PADD 2: Midwest
+2,MN,PADD 2: Midwest
+2,IA,PADD 2: Midwest
+2,MO,PADD 2: Midwest
+2,WI,PADD 2: Midwest
+2,IL,PADD 2: Midwest
+2,MI,PADD 2: Midwest
+2,IN,PADD 2: Midwest
+2,OH,PADD 2: Midwest
+2,KY,PADD 2: Midwest
+2,TN,PADD 2: Midwest
+1,FL,PADD 1: East Coast
+1,GA,PADD 1: East Coast
+1,SC,PADD 1: East Coast
+1,NC,PADD 1: East Coast
+1,VA,PADD 1: East Coast
+1,WV,PADD 1: East Coast
+1,MD,PADD 1: East Coast
+1,DE,PADD 1: East Coast
+1,NJ,PADD 1: East Coast
+1,PA,PADD 1: East Coast
+1,NY,PADD 1: East Coast
+1,VT,PADD 1: East Coast
+1,NH,PADD 1: East Coast
+1,MA,PADD 1: East Coast
+1,CT,PADD 1: East Coast
+1,RI,PADD 1: East Coast
+1,ME,PADD 1: East Coast
