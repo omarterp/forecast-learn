@@ -2,6 +2,8 @@ library("forecast")
 library(MASS)
 library(ggplot2)
 library(zoo)
+
+
 gas.data <-read.csv("./padd1_time_series.csv", skip = 4)#"ECPADD.csv")
 
 gas.ts <-ts(gas.data$Series.ID..PET.MGFUPP12.M.Thousand.Barrels.per.Day,
