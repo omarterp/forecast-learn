@@ -22,7 +22,8 @@ handle_package <- function(x) {
 
 pkg <- c("ggplot2","dplyr","R.utils","fdrtool","caret","randomForest","pROC", 
          "readr", "stringr", "corrgram", "corrplot", "aod", "rvest", "ggfortify",
-         "zoo", "reshape2", "jsonlite", "devtools", "scales", "forecast", "wesanderson")
+         "zoo", "reshape2", "jsonlite", "devtools", "scales", "forecast", 
+         "wesanderson", "RColorBrewer")
 
 lapply(pkg, handle_package)
 
@@ -167,18 +168,25 @@ accuracy(es_opt_pred$mean, valid.ts)
 
 # prepare residuals
 ses_residuals <- fortify(ses_pred$residuals)
-names(ses_residuals) <- c("time","residual")
+ses_residuals$model <- "ses"
+names(ses_residuals) <- c("time","residual", "model")
 
 h_residuals <- fortify(h_pred$residuals)
-names(h_residuals) <- c("time","residual")
+h_residuals$model <- "holt's"
+names(h_residuals) <- c("time","residual","model")
 
 hw_residuals <- fortify(hw_pred$residuals)
-names(hw_residuals) <- c("time","residual")
+hw_residuals$model <- "holt's winter"
+names(hw_residuals) <- c("time","residual","model")
 
-ESOpt_residuals <- fortify(es_opt_pred$residuals)
-names(ESOpt_residuals) <- c("time","residual")
+es_opt_residuals <- fortify(es_opt_pred$residuals)
+es_opt_residuals$model <- "es optimized"
+names(es_opt_residuals) <- c("time","residual","model")
 
+# Create list of all residuals to plot
+residuals <- list(ses_residuals, h_residuals, hw_residuals, es_opt_residuals)
 
+residuals <- bind_rows( residuals )
 
 
 lapply(dev.list(),dev.off)
@@ -186,24 +194,34 @@ lapply(dev.list(),dev.off)
 # Plot Residuals
 
 # Holt's Winter
-p <- ggplot(hw_residuals, aes(x = time, y = residual))
-p + geom_line(aes(colour = residual ), size = 1)
+#p <- ggplot(hw_residuals, aes(x = time, y = residual))
+#p + geom_line(aes(colour = residual ), size = 1)
 
 
 
 # ses and es optimization - https://github.com/karthik/wesanderson
 pal <- wes_palette("Cavalcanti", type = "continuous")
 
-p <- ggplot(ses_residuals, aes(x = time, y = residual))
-p +  geom_line(aes(colour = residual)) + 
-  geom_line(data = ESOpt_residuals, aes(x = time, y = residual), colour = "#CC0033") +
-  scale_fill_gradientn(colours = pal)
+p <- ggplot(residuals, aes(x = model, y = residual, fill = model))
+p +  geom_boxplot() + scale_fill_manual(values = wes_palette("Royal1", 4)) +
+  xlab("") +
+  ggtitle("Model Comparison by Forecast Residuals")
+  
+  #wes_palette()
+  
+  
+  #scale_colour_brewer(palette = "Set1")aes(colour = residual)) + 
+  #geom_line(data = es_opt_residuals, aes(x = time, y = residual), colour = "blue") +
+  #scale_fill_brewer()
+  #scale_colour_gradient(limits=c(-300, 300), low="red", high="gray", space="Lab")
 
+#wes_palette("Moonrise1")
+#boxplot(ses_residuals, col = brewer.pal(8, "Set3"))
 
-p <- ggplot(ses_residuals, aes(x = time, y = residual))
-p +  geom_line(aes(colour = residual)) + 
-     geom_line(data = ESOpt_residuals, aes(x = time, y = residual), colour = "#CC0033") +
-     geom_line(data = h_residuals, aes(x = time, y = residual), colour = "gray")
+#p <- ggplot(ses_residuals, aes(x = time, y = residual))
+#p +  geom_line(aes(colour = residual)) + 
+#     geom_line(data = es_opt_residuals, aes(x = time, y = residual), colour = "#CC0033") +
+#     geom_line(data = h_residuals, aes(x = time, y = residual), colour = "gray")
 
 
 #RColorBrewer::display.brewer.all()

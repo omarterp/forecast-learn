@@ -2,9 +2,9 @@ library("forecast")
 library(MASS)
 library(ggplot2)
 library(zoo)
-gas.data <-read.csv("ECPADD.csv")
+gas.data <-read.csv("./padd1_time_series.csv", skip = 4)#"ECPADD.csv")
 
-gas.ts <-ts(gas.data$East.Coast..PADD.1..Product.Supplied.of.Finished.Motor.Gasoline.Thousand.Barrels.per.Day,
+gas.ts <-ts(gas.data$Series.ID..PET.MGFUPP12.M.Thousand.Barrels.per.Day,
             start = c(1981, 1), end = c(2015, 6),freq = 12)
 
 plot(gas.ts)
@@ -17,7 +17,8 @@ nValid <-12
 nTrain <- length(gas.ts)-nValid
 gastrain.ts <- window(gas.ts, start = c(1981, 1), end = c(1981, nTrain))
 gasvalid.ts <- window(gas.ts, start = c(1981, nTrain +1), end= c(1981, length(gas.ts)))
-___________
+#___________
+
 
 
 tsdisplay(gastrain.ts)
@@ -167,3 +168,46 @@ accuracy(gas.forecastSARIMA$mean, gasvalid.ts)
 accuracy(gas.forecastARIMA$mean, gasvalid.ts)
 accuracy(gas.naive.forecast$mean, gasvalid.ts)
 accuracy(gas.snaive.forecast$mean, gasvalid.ts)
+
+
+# prepare residuals
+gas.forecastSARIMA_residuals <- fortify(gas.forecastSARIMA$residuals)
+gas.forecastSARIMA_residuals$model <- "sarima"
+names(gas.forecastSARIMA_residuals) <- c("time","residual", "model")
+
+gas.forecastARIMA_residuals <- fortify(gas.forecastARIMA$residuals)
+gas.forecastARIMA_residuals$model <- "arima"
+names(gas.forecastARIMA_residuals) <- c("time","residual","model")
+
+gas.naive.forecast_residuals <- fortify(gas.naive.forecast$residuals)
+gas.naive.forecast_residuals$model <- "naive"
+names(gas.naive.forecast_residuals) <- c("time","residual","model")
+
+gas.snaive.forecast_residuals <- fortify(gas.snaive.forecast$residuals)
+gas.snaive.forecast_residuals$model <- "snaive"
+names(gas.snaive.forecast_residuals) <- c("time","residual","model")
+
+# Create list of all residuals to plot
+residuals <- list(gas.forecastSARIMA_residuals, gas.forecastARIMA_residuals, 
+                  gas.naive.forecast_residuals, gas.snaive.forecast_residuals)
+
+residuals <- bind_rows( residuals )
+
+
+lapply(dev.list(),dev.off)
+
+# Plot Residuals
+
+# Holt's Winter
+#p <- ggplot(hw_residuals, aes(x = time, y = residual))
+#p + geom_line(aes(colour = residual ), size = 1)
+
+
+
+# ses and es optimization - https://github.com/karthik/wesanderson
+pal <- wes_palette("Cavalcanti", type = "continuous")
+
+p <- ggplot(residuals, aes(x = model, y = residual, fill = model))
+p +  geom_boxplot() + scale_fill_manual(values = wes_palette("Royal1", 4)) +
+  xlab("") +
+  ggtitle("Model Comparison by Forecast Residuals")
