@@ -22,7 +22,7 @@ handle_package <- function(x) {
 
 pkg <- c("ggplot2","dplyr","R.utils","fdrtool","caret","randomForest","pROC", 
          "readr", "stringr", "corrgram", "corrplot", "aod", "rvest", "ggfortify",
-         "zoo", "reshape2", "jsonlite", "devtools", "scales", "forecast")
+         "zoo", "reshape2", "jsonlite", "devtools", "scales", "forecast", "wesanderson")
 
 lapply(pkg, handle_package)
 
@@ -109,47 +109,48 @@ valid.ts <- window(fuel_consumption_ts, start = c(1981, nTrain + 1), end = c(198
 
 
 # Models
+
+par(mfrow = c(2, 1))
+
+# Simple Exponential Smoothing
 ses <- ses(train.ts)
 ses_pred <- forecast(ses, h = prediction_periods,  level = c(80,95))
 
-plot(ses_pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
+plot(ses_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", 
+     xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
+
 axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
-lines(hw_pred$fitted, lwd = 2, col = "blue")
+lines(ses_pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
-plot(ses)
 
+# Holt's Linear with trend - No Alpha & Beta
 holt_m <- holt(train.ts)
 h_pred <- forecast(holt_m, h = prediction_periods, level = c(80,95))
 
-plot(h_pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
+plot(h_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
 axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
 lines(h_pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
+
+# Holt's Linear Trend with alpha and no model restrictions
 hw <- ets(train.ts, model = "MMA", alpha = 0.8, restrict = FALSE)
-plot(hw)
-hw
-
-par(mfrow = c(2, 1))
-
 hw_pred <- forecast(hw, h = prediction_periods, level = c(80,95))
 
-plot(hw_pred, ylim = c(1800, 4000),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
+plot(hw_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
 axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
 lines(hw_pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
+# Exponential Smoothing Automated
 es_opt <- ets(train.ts)
-plot(es_opt)
-es_opt
-
 es_opt_pred <- forecast(es_opt, h = prediction_periods, level = c(80,95))
 
-plot(es_opt_pred, ylim = c(1800, 3300),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
+plot(es_opt_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
 axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
 lines(es_opt_pred$fitted, lwd = 2, col = "blue")
@@ -162,43 +163,47 @@ accuracy(h_pred$mean, valid.ts)
 accuracy(hw_pred$mean, valid.ts)
 accuracy(es_opt_pred$mean, valid.ts)
 
-class(ses_pred$residuals)
 
-# plot residuals
+
+# prepare residuals
 ses_residuals <- fortify(ses_pred$residuals)
 names(ses_residuals) <- c("time","residual")
 
 h_residuals <- fortify(h_pred$residuals)
-names(hw_residuals) <- c("time","residual")
-
-h_residuals <- fortify(hw_pred$residuals)
 names(h_residuals) <- c("time","residual")
+
+hw_residuals <- fortify(hw_pred$residuals)
+names(hw_residuals) <- c("time","residual")
 
 ESOpt_residuals <- fortify(es_opt_pred$residuals)
 names(ESOpt_residuals) <- c("time","residual")
 
 
-# Plot Residuals
-p <- ggplot(hw_residuals, aes(x = time, y = residual))
-p + geom_line(aes(colour = residual))
+
 
 lapply(dev.list(),dev.off)
 
-par(mfrow = c(2,1))
+# Plot Residuals
+
+# Holt's Winter
+p <- ggplot(hw_residuals, aes(x = time, y = residual))
+p + geom_line(aes(colour = residual ), size = 1)
+
+
+
+# ses and es optimization - https://github.com/karthik/wesanderson
+pal <- wes_palette("Cavalcanti", type = "continuous")
 
 p <- ggplot(ses_residuals, aes(x = time, y = residual))
-p + geom_line(aes(colour = residual)) +
-  geom_point(data = ESOpt_residuals, aes(x = time, y = residual), colour = "#CC0033")
-
-p1 <- ggplot(data = hw_residuals, aes(x = time, y = residual))
-p1 + geom_line(aes(colour = residual))
-
-plot1 <- qplot(x = time, y = residual, aes(colour = residuals), 
-               data = ses_residuals, geom = "line")
-plot1
+p +  geom_line(aes(colour = residual)) + 
+  geom_line(data = ESOpt_residuals, aes(x = time, y = residual), colour = "#CC0033") +
+  scale_fill_gradientn(colours = pal)
 
 
-grid.arrange(plot1)
+p <- ggplot(ses_residuals, aes(x = time, y = residual))
+p +  geom_line(aes(colour = residual)) + 
+     geom_line(data = ESOpt_residuals, aes(x = time, y = residual), colour = "#CC0033") +
+     geom_line(data = h_residuals, aes(x = time, y = residual), colour = "gray")
 
 
-
+#RColorBrewer::display.brewer.all()
