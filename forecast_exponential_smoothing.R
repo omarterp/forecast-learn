@@ -129,6 +129,9 @@ par(mfrow = c(2, 1))
 
 
 # Holt's Linear with trend - No Alpha & Beta
+
+#differenced_ts <- diff(train.ts, lag = 12), differences = 1))
+
 holt_m <- holt(train.ts)
 h_pred <- forecast(holt_m, h = prediction_periods, level = c(80,95))
 
@@ -141,10 +144,12 @@ lines(valid.ts)
 
 tsdisplay(h_pred$residuals)
 
+plotForecastErrors(h_pred$residuals)
+
 
 # Holt's Linear Trend with alpha and no model restrictions
-hw <- ets((train.ts), model = "AAA", alpha = 0.8, restrict = FALSE)
-hw_pred <- forecast(hw, h = prediction_periods, level = c(80,95))
+#hw <- ets((train.ts), model = "AAA", alpha = 0.8, beta = 0.3, restrict = FALSE)
+#hw_pred <- forecast(hw, h = prediction_periods, level = c(80,95))
 
 par(mfrow = c(2,1))
 
@@ -154,9 +159,9 @@ differenced_ts <- (diff(train.ts, lag = 12, differences = 2))
 
 tsdisplay(hw_pred$residuals)
 
-# Holt's Linear Trend with alpha and no model restrictions
-hw <- ets(differenced_ts, model = "MAA", alpha = 0.8, restrict = FALSE)
-hw_pred <- forecast(hw, h = 12, level = c(80,95))
+# Holt's Winter Trend with alpha and no model restrictions
+hw <- ets(train.ts, model = "MMA", restrict = FALSE, alpha = 0.8)#, RESTRICT = FALSE, allow.multiplicative.trend = TRUE)
+hw_pred <- forecast(hw, h = prediction_periods, level = c(80,95))
 
 plot(hw_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
@@ -169,7 +174,7 @@ tsdisplay(hw_pred$residuals)
 
 # Exponential Smoothing Automated
 es_opt <- ets(train.ts)
-es_opt_pred <- forecast(es_opt, h = 12, level = c(80,95))
+es_opt_pred <- forecast(es_opt, h = prediction_periods, level = c(80,95))
 
 plot(es_opt_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
@@ -213,7 +218,100 @@ residuals <- bind_rows( residuals )
 
 lapply(dev.list(),dev.off)
 
-# Plot Residuals
+
+
+
+
+### Time Series Plot ###
+p <- ggplot(time_series_df, aes(x = month_year_conv , y = consumption))
+
+p + geom_line() +
+  ggtitle("Product Supplied of Finished Gasoline") +
+  xlab("") + 
+  ylab("Thousand Barrels per Day") +
+  scale_x_date(labels = date_format("%b-%y"), breaks = "3 years") +
+  geom_smooth()
+
+### Boxplots of Years as a Time Series ###
+
+# Does the variation increase as the level increases - By Year
+bp <- ggplot(time_series_df, aes(x = year , y = consumption))
+bp + geom_boxplot() +
+  ggtitle("Product Supplied of Finished Gasoline - Boxplots by Year") +
+  xlab("") + 
+  ylab("Thousand Barrels per Day")
+
+### Bimodal Distribution ###
+
+# Bimodal Histogram
+bm <- ggplot(time_series_df, aes(x = consumption))
+bm + geom_histogram() +
+  ggtitle("Product Supplied of Finished Gasoline") +  
+  ylab("frequency") +
+  xlab("Thousand Barrels per Day")
+
+
+### Forecasts ###
+
+# Holt's Linear with trend - Auto Alpha and Beta
+holt_m <- holt(train.ts)
+h_pred <- forecast(holt_m, h = prediction_periods, level = c(80,95))
+
+plot(h_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", , bty = "l", xaxt = "n",
+     xlim = c(1981,2015.75), main = "", flty = 2)
+title(main = "Holt's Linear with Trend")
+axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
+lines(h_pred$fitted, lwd = 2, col = "blue")
+lines(valid.ts)
+
+# ETS Manual
+hw <- ets(train.ts, model = "MMA", restrict = FALSE, alpha = 0.8)#, RESTRICT = FALSE, allow.multiplicative.trend = TRUE)
+hw_pred <- forecast(hw, h = prediction_periods, level = c(80,95))
+
+plot(hw_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", bty = "l", xaxt = "n",
+     xlim = c(1981,2015.75), main = "", flty = 2)
+title(main = "ETS Manual")
+axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
+lines(hw_pred$fitted, lwd = 2, col = "blue")
+lines(valid.ts)
+
+
+# ETS Automated
+es_opt <- ets(train.ts)
+es_opt_pred <- forecast(es_opt, h = prediction_periods, level = c(80,95))
+
+plot(es_opt_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", bty = "l", xaxt = "n",
+     xlim = c(1981,2015.75), main = "", flty = 2)
+title(main = "ETS Automatic")
+axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
+lines(es_opt_pred$fitted, lwd = 2, col = "blue")
+lines(valid.ts)
+
+
+
+### Plot Residuals ###
+
+# Histogram of Forecast Errors
+plotForecastErrors(h_residuals$residual, h_residuals$model[1])
+plotForecastErrors(hw_residuals$residual, hw_residuals$model[1])
+plotForecastErrors(es_opt_residuals$residual, es_opt_residuals$model[1])
+
+# Line Charts of Forecast Errors
+plot(h_residuals$residual, type = "l", ylab = "residual", xlab = "")
+title(main = "Residuals - holt's")
+
+plot(hw_residuals$residual, type = "l", ylab = "residual", xlab = "")
+title(main = "Residuals - ets manual")
+
+plot(es_opt_residuals$residual, type = "l", ylab = "residual", xlab = "")
+title(main = "Residuals - ets auto")
+
+# Scatter Plots of Forecast Errors
+plot(h_residuals$residual, type = "p")
+plot(hw_residuals$residual, type = "p")
+plot(es_opt_residuals$residual, type = "p")
+
+
 
 # Holt's Winter
 #p <- ggplot(hw_residuals, aes(x = time, y = residual))
@@ -249,3 +347,28 @@ p +  geom_boxplot() + scale_fill_manual(values = pal) +#wes_palette("Royal1", 8)
 
 
 #RColorBrewer::display.brewer.all()
+
+
+plotForecastErrors <- function(forecasterrors, model)
+{
+  
+  # make a histogram of the forecast errors:
+  mybinsize <- IQR(forecasterrors)/4
+  mysd   <- sd(forecasterrors)
+  mymin  <- min(forecasterrors) - mysd*5
+  mymax  <- max(forecasterrors) + mysd*3
+  # generate normally distributed data with mean 0 and standard deviation mysd
+  mynorm <- rnorm(10000, mean=0, sd=mysd)
+  mymin2 <- min(mynorm)
+  mymax2 <- max(mynorm)
+  if (mymin2 < mymin) { mymin <- mymin2 }
+  if (mymax2 > mymax) { mymax <- mymax2 }
+  # make a red histogram of the forecast errors, with the normally distributed data overlaid:
+  mybins <- seq(mymin, mymax, mybinsize)
+  hist(forecasterrors, col="red", freq=FALSE, breaks=mybins, main = paste("Forecast Errors - ", model))
+  # freq=FALSE ensures the area under the histogram = 1
+  # generate normally distributed data with mean 0 and standard deviation mysd
+  myhist <- hist(mynorm, plot=FALSE, breaks=mybins)
+  # plot the normal curve as a blue line on top of the histogram of forecast errors:
+  points(myhist$mids, myhist$density, type="l", col="blue", lwd=2)
+}
