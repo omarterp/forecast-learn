@@ -114,16 +114,18 @@ valid.ts <- window(fuel_consumption_ts, start = c(1981, nTrain + 1), end = c(198
 par(mfrow = c(2, 1))
 
 # Simple Exponential Smoothing
-ses <- ses(train.ts)
-ses_pred <- forecast(ses, h = prediction_periods,  level = c(80,95))
+#ses <- ses(train.ts)
+#ses_pred <- forecast(ses, h = prediction_periods,  level = c(80,95))
 
-plot(ses_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", 
-     xlab = "Time", bty = "l", xaxt = "n",
-     xlim = c(1981,2015.75), main = "", flty = 2)
+#plot(ses_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", 
+#     xlab = "Time", bty = "l", xaxt = "n",
+#     xlim = c(1981,2015.75), main = "", flty = 2)
 
-axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
-lines(ses_pred$fitted, lwd = 2, col = "blue")
-lines(valid.ts)
+#axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
+#lines(ses_pred$fitted, lwd = 2, col = "blue")
+#lines(valid.ts)
+
+#tsdisplay(ses_pred$residuals)
 
 
 # Holt's Linear with trend - No Alpha & Beta
@@ -136,9 +138,11 @@ axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
 lines(h_pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
+tsdisplay(h_pred$residuals)
+
 
 # Holt's Linear Trend with alpha and no model restrictions
-hw <- ets(train.ts, model = "MMA", alpha = 0.8, restrict = FALSE)
+hw <- ets((train.ts), model = "AAA", alpha = 0.8, restrict = FALSE)
 hw_pred <- forecast(hw, h = prediction_periods, level = c(80,95))
 
 plot(hw_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
@@ -146,6 +150,9 @@ plot(hw_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", xlab = "Time"
 axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
 lines(hw_pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
+
+plot(hw_pred$residuals, type = "l")
+tsdisplay(hw_pred$residuals)
 
 # Exponential Smoothing Automated
 es_opt <- ets(train.ts)
