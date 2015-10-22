@@ -136,10 +136,17 @@ axis(1, at = seq(1981, 2015, 1), labels = format(seq(1981, 2015, 1)))
 lines(h_pred$fitted, lwd = 2, col = "blue")
 lines(valid.ts)
 
+par(mfrow = c(2,1))
+
+tsdisplay(diff(train.ts, lag = 12, differences = 2))
+
+differenced_ts <- (diff(train.ts, lag = 12, differences = 2))
+
+tsdisplay(hw_pred$residuals)
 
 # Holt's Linear Trend with alpha and no model restrictions
-hw <- ets(train.ts, model = "MMA", alpha = 0.8, restrict = FALSE)
-hw_pred <- forecast(hw, h = prediction_periods, level = c(80,95))
+hw <- ets(differenced_ts, model = "MAA", alpha = 0.8, restrict = FALSE)
+hw_pred <- forecast(hw, h = 12, level = c(80,95))
 
 plot(hw_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
@@ -149,7 +156,7 @@ lines(valid.ts)
 
 # Exponential Smoothing Automated
 es_opt <- ets(train.ts)
-es_opt_pred <- forecast(es_opt, h = prediction_periods, level = c(80,95))
+es_opt_pred <- forecast(es_opt, h = 12, level = c(80,95))
 
 plot(es_opt_pred, ylim = c(1800, 3500),  ylab = "Barrels (Thousands)", xlab = "Time", bty = "l", xaxt = "n",
      xlim = c(1981,2015.75), main = "", flty = 2)
@@ -176,15 +183,17 @@ h_residuals$model <- "holt's"
 names(h_residuals) <- c("time","residual","model")
 
 hw_residuals <- fortify(hw_pred$residuals)
-hw_residuals$model <- "holt's winter"
+hw_residuals$model <- "ets manual"
 names(hw_residuals) <- c("time","residual","model")
 
 es_opt_residuals <- fortify(es_opt_pred$residuals)
-es_opt_residuals$model <- "es optimized"
+es_opt_residuals$model <- "ets optimized"
 names(es_opt_residuals) <- c("time","residual","model")
 
 # Create list of all residuals to plot
-residuals <- list(ses_residuals, h_residuals, hw_residuals, es_opt_residuals)
+residuals <- list(ses_residuals, h_residuals, hw_residuals, es_opt_residuals,
+                  gas.forecastSARIMA_residuals, gas.forecastARIMA_residuals, 
+                  gas.naive.forecast_residuals, gas.snaive.forecast_residuals)
 
 residuals <- bind_rows( residuals )
 
@@ -200,11 +209,13 @@ lapply(dev.list(),dev.off)
 
 
 # ses and es optimization - https://github.com/karthik/wesanderson
-pal <- wes_palette("Cavalcanti", type = "continuous")
+pal <- wes_palette(8, name = "Royal1", type = "continuous")
+wes_palette("Royal1", 8)
 
 p <- ggplot(residuals, aes(x = model, y = residual, fill = model))
-p +  geom_boxplot() + scale_fill_manual(values = wes_palette("Royal1", 4)) +
+p +  geom_boxplot() + scale_fill_manual(values = pal) +#wes_palette("Royal1", 8)) +
   xlab("") +
+  ylab("residual (thousand barrels)") + 
   ggtitle("Model Comparison by Forecast Residuals")
   
   #wes_palette()
